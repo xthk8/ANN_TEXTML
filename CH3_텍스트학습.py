@@ -1,7 +1,13 @@
-# 맨 처음 - 데이터 읽어오기
-
 import os
 import glob
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
+import numpy as np
+import random
+
+# 맨 처음 - 데이터 읽어오기
 
 def read_reviews_from_folders(base_path):
     data = []
@@ -20,26 +26,28 @@ review_base_path = 'C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하
 
 reviews, scores = read_reviews_from_folders(review_base_path)
 
+
 ###################################
 
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
-import numpy as np
-import random
-
 # 활성화 함수 정의
-def sigmoid(x):
+def sigmoid(x):     # 은닉층
     return 1 / (1 + np.exp(-x))
 
-def softmax(a):
+def softmax(a):     # 출력층
     exp_a = np.exp(a - np.max(a, axis=1, keepdims=True))
     sum_exp_a = np.sum(exp_a, axis=1, keepdims=True)
     y = exp_a / sum_exp_a
     return y
 
-# 신경망 초기화 함수
+###################################
+
+# 신경망 구조 설정 및 초기화
+input_size = 25467
+hidden_size1 = 50
+hidden_size2 = 5
+output_size = 5
+
+# 신경망 초기화 함수   --> 각 테스트에 대해 맨 처음 정의 시
 def initialize_network(input_size, hidden_size1, hidden_size2, output_size):
     np.random.seed(42)
     return {
@@ -51,7 +59,7 @@ def initialize_network(input_size, hidden_size1, hidden_size2, output_size):
         'b3': np.random.rand(output_size)
     }
 
-# 순전파 함수
+# 순전파 함수 --> 예측값 도출
 def forward(network, x):
     W1, b1 = network['W1'], network['b1']
     W2, b2 = network['W2'], network['b2']
@@ -65,21 +73,67 @@ def forward(network, x):
     y = softmax(a3)
     return y
 
-'''
-def loss(x, t):
-    y = forward(x)
+# 손실 함수 (교차 엔트로피 오차) --> 예측값 & 실제값 비교
+def cross_entropy_error(y, t):
+    if isinstance(t, list):
+        t = np.array(t)  # 리스트라면 NumPy 배열로 변환
 
-def numerical_gradient(x, t):
-    loss_W = lambda W: loss(x, t)
+    if t.ndim == 1:  # 정수 레이블을 원-핫 인코딩으로 변환
+        t = np.eye(y.shape[1])[t - 1]
+
+    batch_size = y.shape[0]
+    return -np.sum(np.log(y[np.arange(batch_size), t.argmax(axis=1)] + 1e-7)) / batch_size
+
+####################################
+
+def loss(network, x, t):                                 # 모델의 예측 결과값을 받아 실제 정답과 오차 계산 (예측 & 평가 한 번에 실행)
+    y = forward(network, x)
+    return cross_entropy_error(y,t)
+
+def develop_gradient(network, x, t):            # 매개변수 갱신
+    loss_W = lambda W: loss(network, x, t)
 
     grads = {}
     grads['W1'] = numerical_gradient(loss_W, network['W1'])
     grads['b1'] = numerical_gradient(loss_W, network['b1'])
     grads['W2'] = numerical_gradient(loss_W, network['W2'])
     grads['b2'] = numerical_gradient(loss_W, network['b2'])
+    grads['W3'] = numerical_gradient(loss_W, network['W3'])
+    grads['b3'] = numerical_gradient(loss_W, network['b3'])
 
     return grads
-'''
+
+
+def numerical_gradient(f, x):   # 손실함수의 기울기 도출 -> 이후 이를 바탕으로 매개변수 갱신
+    h = 1e-4
+    grad = np.zeros_like(x)     # x와 형상이 같은 배열을 생성
+
+    it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
+
+    while not it.finished:
+        idx = it.multi_index
+        tmp_val = x[idx]
+        x[idx] = float(tmp_val) + h
+        fxh1 = f(x)  # f(x+h)
+
+        x[idx] = tmp_val - h
+        fxh2 = f(x)  # f(x-h)
+        grad[idx] = (fxh1 - fxh2) / (2 * h)
+
+        x[idx] = tmp_val  # 값 복원
+        it.iternext()
+
+    return grad
+
+# 경사하강법 
+def gradient_descent(f, init_x, lr=0.01, step_num=30):
+    x = init_x
+
+    for i in range(step_num):
+        grad = numerical_gradient(f, x)
+        x -= lr * grad
+
+    return x
 
 #################
 
@@ -89,31 +143,26 @@ train_reviews, test_reviews, train_scores, test_scores = train_test_split(
     reviews, scores, test_size=0.2, random_state=42
 )
 
+
+
 # 텍스트 토큰화 및 패딩
 tokenizer = Tokenizer(num_words=2000)  # 상위 2000개 단어만 사용
 tokenizer.fit_on_texts(train_reviews)
 train_sequences = tokenizer.texts_to_sequences(train_reviews)
-test_sequences = tokenizer.texts_to_sequences(test_reviews)
+sequences = tokenizer.texts_to_sequences(reviews)
 
 # 모든 시퀀스를 같은 길이로 맞춤 (예: 100 단어)
-maxlen = 100
+maxlen = 25
 train_data = pad_sequences(train_sequences, maxlen=maxlen)
-test_data = pad_sequences(test_sequences, maxlen=maxlen)
+data = pad_sequences(sequences, maxlen=maxlen)
 
 # 원-핫 인코딩 적용
 encoder = OneHotEncoder(categories='auto', handle_unknown='ignore')
 encoder.fit(train_data)
 train_vectors = encoder.transform(train_data).toarray()
-test_vectors = encoder.transform(test_data).toarray()
+vectors = encoder.transform(data).toarray()
 
-# 신경망 구조 설정 및 초기화
-input_size = 100
-hidden_size1 = 50
-hidden_size2 = 5
-output_size = 5
-
-network = initialize_network(input_size, hidden_size1, hidden_size2, output_size)
-
+'''
 # 정확도 평가 함수
 def predict_scores(network, x):
     y = forward(network, x)
@@ -122,34 +171,52 @@ def predict_scores(network, x):
 
 def calculate_accuracy(network, x, actual_scores):
     predicted_scores = predict_scores(network, x)
-    return np.mean(predicted_scores == actual_scores)
+    return np.sum(predicted_scores == actual_scores)
+'''
 
-# 랜덤 샘플링 및 평가
-def random_sample_and_evaluate(network, train_data, train_scores, test_data, test_scores, num_samples=30, sample_size=100):
+#################################################33
+
+# 실행 함수 정의
+def perform(network, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100):
+
     accuracies = []
 
-    for _ in range(num_samples):
-        # 학습 데이터셋에서 랜덤하게 샘플링
-        train_indices = np.random.choice(len(train_data), sample_size, replace=False)
-        sampled_train_data = train_data[train_indices]
-        sampled_train_scores = np.array(train_scores)[train_indices]
+    for epoch in range(epochs):
+        learning_rate = 0.01
 
-        # 테스트 데이터셋에서 랜덤하게 샘플링
-        test_indices = np.random.choice(len(test_data), sample_size, replace=False)
-        sampled_test_data = test_data[test_indices]
-        sampled_test_scores = np.array(test_scores)[test_indices]
+        # 각 에포크마다 전체 훈련 데이터를 사용
+        for i in range(0, len(train_data), batch_size):
+            x_batch = train_data[i:i+batch_size]
+            t_batch = train_labels[i:i+batch_size]
 
-        # 이 부분에서 모델을 학습시킬 수 있습니다.
-        # 예: train_model(network, sampled_train_data, sampled_train_scores)
+            # t_batch를 NumPy 배열로 변환
+            t_batch = np.array(t_batch)
 
-        # 테스트 데이터셋으로 정확도 계산
-        accuracy = calculate_accuracy(network, sampled_test_data, sampled_test_scores)
-        accuracies.append(accuracy)
+            # 기울기 계산
+            grads = develop_gradient(network, x_batch, t_batch)
 
-    # 평균 정확도 계산
+            # 경사 하강법으로 매개변수 갱신
+            for key in ('W1', 'b1', 'W2', 'b2', 'W3', 'b3'):
+                network[key] -= learning_rate * grads[key]
+
+        # 에포크마다 테스트 데이터셋으로 정확도 평가
+        test_accuracy = 0
+        for i in range(0, len(test_data), batch_size):
+            x_test_batch = test_data[i:i+batch_size]
+            t_test_batch = test_labels[i:i+batch_size]
+
+            y_test_batch = forward(network, x_test_batch)
+            test_accuracy += np.sum(np.argmax(y_test_batch, axis=1) == t_test_batch)
+
+        test_accuracy /= len(test_data)
+        accuracies.append(test_accuracy)
+        print(f"Epoch {epoch + 1}, Test Accuracy: {test_accuracy}")
+
     mean_accuracy = np.mean(accuracies)
     return mean_accuracy
 
-# 랜덤 샘플링 및 평가
-mean_accuracy = random_sample_and_evaluate(network, train_data, train_scores, test_data, test_scores)
-print("Mean Accuracy over 30 samples:", mean_accuracy)
+    
+# 모델 초기화 및 학습
+network = initialize_network(input_size, hidden_size1, hidden_size2, output_size)
+mean_accuracy = perform(network, train_vectors, train_scores, vectors, test_scores, epochs=10, batch_size=100)
+print("Mean Accuracy:", mean_accuracy)
