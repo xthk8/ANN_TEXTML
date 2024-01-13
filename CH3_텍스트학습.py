@@ -8,23 +8,32 @@ import numpy as np
 import random
 
 # 맨 처음 - 데이터 읽어오기
-
-def read_reviews_from_folders(base_path):
+def read_reviews_from_folders(base_path, max_files_per_score=2000):
     data = []
     labels = []
-    for score in range(1, 6):  
+    for score in range(1, 6):
         folder_path = os.path.join(base_path, str(score))
-        # 각각의 점수에 해당하는 텍스트 파일 읽기
+        file_count = 0
+        # 각각의 점수에 해당하는 텍스트 파일 읽기 (최대 2000개)
         for file_path in glob.glob(os.path.join(folder_path, '*.txt')):
+            if file_count >= max_files_per_score:
+                break
             with open(file_path, 'r', encoding='utf8') as file:
                 review_text = file.read().strip()
                 data.append(review_text)
                 labels.append(score)
+            file_count += 1
     return data, labels
 
-review_base_path = 'C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하는 딥러닝/Review/reviews' 
-
+# 파일 경로 정의 및 함수 호출
+review_base_path = 'C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하는 딥러닝/Review/reviews'
 reviews, scores = read_reviews_from_folders(review_base_path)
+
+
+# 데이터셋 분할
+train_reviews, test_reviews, train_scores, test_scores = train_test_split(
+    reviews, scores, test_size=0.2, random_state=42
+)
 
 
 ###################################
@@ -40,12 +49,6 @@ def softmax(a):     # 출력층
     return y
 
 ###################################
-
-# 신경망 구조 설정 및 초기화
-input_size = 25467
-hidden_size1 = 50
-hidden_size2 = 5
-output_size = 5
 
 # 신경망 초기화 함수   --> 각 테스트에 대해 맨 처음 정의 시
 def initialize_network(input_size, hidden_size1, hidden_size2, output_size):
@@ -138,12 +141,6 @@ def gradient_descent(f, init_x, lr=0.01, step_num=30):
 #################
 
 
-# 데이터셋 분할
-train_reviews, test_reviews, train_scores, test_scores = train_test_split(
-    reviews, scores, test_size=0.2, random_state=42
-)
-
-
 
 # 텍스트 토큰화 및 패딩
 tokenizer = Tokenizer(num_words=2000)  # 상위 2000개 단어만 사용
@@ -162,7 +159,15 @@ encoder.fit(train_data)
 train_vectors = encoder.transform(train_data).toarray()
 vectors = encoder.transform(data).toarray()
 
-'''
+# 신경망 구조 설정 및 초기화
+input_size = train_vectors.shape[1]
+hidden_size1 = 50
+hidden_size2 = 5
+output_size = 5
+
+###############################################
+
+
 # 정확도 평가 함수
 def predict_scores(network, x):
     y = forward(network, x)
@@ -172,9 +177,8 @@ def predict_scores(network, x):
 def calculate_accuracy(network, x, actual_scores):
     predicted_scores = predict_scores(network, x)
     return np.sum(predicted_scores == actual_scores)
-'''
 
-#################################################33
+#################################################
 
 # 실행 함수 정의
 def perform(network, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100):
