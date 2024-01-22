@@ -78,14 +78,16 @@ def forward(network, x):
 
 # 손실 함수 (교차 엔트로피 오차) --> 예측값 & 실제값 비교
 def cross_entropy_error(y, t):
-    if isinstance(t, list):
-        t = np.array(t)  # 리스트라면 NumPy 배열로 변환
-
-    if t.ndim == 1:  # 정수 레이블을 원-핫 인코딩으로 변환
-        t = np.eye(y.shape[1])[t - 1]
-
+    if y.ndim == 1:
+        t = t.reshape(1, t.size)
+        y = y.reshape(1, y.size)
+        
+    # 레이블이 원-핫 인코딩인 경우 정수 레이블로 변환
+    if t.size == y.size:
+        t = t.argmax(axis=1)
+             
     batch_size = y.shape[0]
-    return -np.sum(np.log(y[np.arange(batch_size), t.argmax(axis=1)] + 1e-7)) / batch_size
+    return -np.sum(np.log(y[np.arange(batch_size), t] + 1e-7)) / batch_size
 
 ####################################
 
