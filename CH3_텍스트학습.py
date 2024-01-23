@@ -26,7 +26,7 @@ def read_reviews_from_folders(base_path, max_files_per_score=2000):
     return data, labels
 
 # 파일 경로 정의 및 함수 호출
-review_base_path = "C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하는 딥러닝/reviews_2"
+review_base_path = "C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하는 딥러닝/reviews3"
 reviews, scores = read_reviews_from_folders(review_base_path)
 
 
@@ -39,14 +39,24 @@ train_reviews, test_reviews, train_scores, test_scores = train_test_split(
 ###################################
 
 # 활성화 함수 정의
+'''
 def sigmoid(x):     # 은닉층
     return 1 / (1 + np.exp(-x))
+'''
+def sigmoid(x):     # 오버플로 발생으로 인해 대체된 코드
+    z = np.exp(-np.abs(x))
+    return np.where(x > 0, 1 / (1 + z), z / (1 + z))
 
-def softmax(a):     # 출력층
-    exp_a = np.exp(a - np.max(a, axis=1, keepdims=True))
-    sum_exp_a = np.sum(exp_a, axis=1, keepdims=True)
-    y = exp_a / sum_exp_a
-    return y
+
+def softmax(x):     # 출력층
+    if x.ndim == 2:
+        x = x.T
+        x = x - np.max(x, axis=0)
+        y = np.exp(x) / np.sum(np.exp(x), axis=0)
+        return y.T
+
+    x = x - np.max(x) # 오버플로 대책
+    return np.exp(x) / np.sum(np.exp(x))
 
 ###################################
 
@@ -143,7 +153,7 @@ def gradient_descent(f, init_x, lr=0.01, step_num=30):
 #################
 
 # 텍스트 토큰화 및 패딩
-tokenizer = Tokenizer(num_words=2000)  # 상위 2000개 단어만 사용
+tokenizer = Tokenizer(num_words=1000)  # 상위 1000개 단어만 사용
 tokenizer.fit_on_texts(reviews)  # 전체 리뷰 데이터에 대해 fit
 train_sequences = tokenizer.texts_to_sequences(train_reviews)
 test_sequences = tokenizer.texts_to_sequences(test_reviews)
@@ -227,17 +237,20 @@ network = initialize_network(input_size, hidden_size1, hidden_size2, output_size
 mean_accuracy = perform(network, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100)
 print("Mean Accuracy:", mean_accuracy)
 
-'''
-Epoch 1, Test Accuracy: 0.186
-Epoch 2, Test Accuracy: 0.186
-Epoch 3, Test Accuracy: 0.186
-Epoch 4, Test Accuracy: 0.186
-Epoch 5, Test Accuracy: 0.186
-Epoch 6, Test Accuracy: 0.186
-Epoch 7, Test Accuracy: 0.186
-Epoch 8, Test Accuracy: 0.186
-Epoch 9, Test Accuracy: 0.186
-Epoch 10, Test Accuracy: 0.186
 
-Mean Accuracy: 0.186
+
+
+''' 
+Epoch 1, Test Accuracy: 0.1935
+Epoch 2, Test Accuracy: 0.1935
+Epoch 3, Test Accuracy: 0.1935
+Epoch 4, Test Accuracy: 0.2075
+Epoch 5, Test Accuracy: 0.2075
+Epoch 6, Test Accuracy: 0.2075
+Epoch 7, Test Accuracy: 0.2075
+Epoch 8, Test Accuracy: 0.2075
+Epoch 9, Test Accuracy: 0.2075
+Epoch 10, Test Accuracy: 0.2075
+
+Mean Accuracy: 0.20329999999999998
 '''
