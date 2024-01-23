@@ -24,7 +24,7 @@ def read_reviews_from_folders(base_path, max_files_per_score=2000):
     return data, labels
 
 # 파일 경로 정의 및 함수 호출
-review_base_path = "C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하는 딥러닝/reviews_2"
+review_base_path = "C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하는 딥러닝/reviews3"
 reviews, scores = read_reviews_from_folders(review_base_path)
 
 # 텍스트 토큰화 및 패딩
@@ -160,6 +160,6 @@ output_size = 5
 
 network = initialize_network(input_size, hidden_size1, hidden_size2, output_size)
 mean_accuracy = perform(network, data, labels, k=5, epochs=10, batch_size=100)
-print("Mean Accuracy with K-fold Cross Validation:", mean_accuracy)
+print("Mean Accuracy :", mean_accuracy)
 
-# Mean Accuracy with K-fold Cross Validation: 0.2
+# Mean Accuracy : 0.2
