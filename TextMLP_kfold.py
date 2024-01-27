@@ -44,7 +44,7 @@ Tokenizer 클래스
     4) padding : pre/post를 지정하여 앞이나 뒤에 패딩을 삽입할지 결정, 기본값은 pre
     5) truncating : pre/post를 지정하여 시퀀스가 maxlen보다 길 때 앞이나 뒤를 잘라낼지 결정, 기본값은 pre
 '''
-tokenizer = Tokenizer(num_words=2000)               # 가장 빈번한 2000(최대 단어 수 지정)개 단어만 사용
+tokenizer = Tokenizer(num_words=100)               # 가장 빈번한 2000(최대 단어 수 지정)개 단어만 사용
 tokenizer.fit_on_texts(reviews)                     # 각 리뷰 데이터들에서 단어를 토큰화하고, 각 단어에 고유한 인덱스를 할당
 sequences = tokenizer.texts_to_sequences(reviews)   # 텍스트를 이러한 인덱스의 시퀀스로 변환 => 신경망 모델의 입력
 maxlen = 25
@@ -187,14 +187,15 @@ def perform(network, data, labels, k=5, epochs=10, batch_size=100):
                     network[key] -= learning_rate * grads[key]
 
         # 폴드별 정확도 계산
-        test_accuracy = 0
         for i in range(0, len(test_data), batch_size):
             x_test_batch = test_data[i:i+batch_size]
             t_test_batch = test_labels[i:i+batch_size]
 
             y_test_batch = forward(network, x_test_batch)
-            test_accuracy += np.sum(np.argmax(y_test_batch, axis=1) == np.argmax(t_test_batch, axis=1))
+            test_accuracy = np.sum(np.argmax(y_test_batch, axis=1) == np.argmax(t_test_batch, axis=1))
+
         test_accuracy /= len(test_data)
+        print(test_accuracy)
         fold_accuracies.append(test_accuracy)
 
     mean_accuracy = np.mean(fold_accuracies)
