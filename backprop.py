@@ -274,16 +274,16 @@ print("Mean Accuracy:", mean_accuracy)
 
 
 ''' 
-Epoch 1, Test Accuracy: 0.205
-Epoch 2, Test Accuracy: 0.205
-Epoch 3, Test Accuracy: 0.205
-Epoch 4, Test Accuracy: 0.205
-Epoch 5, Test Accuracy: 0.205
-Epoch 6, Test Accuracy: 0.205
-Epoch 7, Test Accuracy: 0.205
-Epoch 8, Test Accuracy: 0.205
-Epoch 9, Test Accuracy: 0.205
-Epoch 10, Test Accuracy: 0.205
+Epoch 1, Test Accuracy: 0.2095
+Epoch 2, Test Accuracy: 0.2095
+Epoch 3, Test Accuracy: 0.2095
+Epoch 4, Test Accuracy: 0.2095
+Epoch 5, Test Accuracy: 0.2095
+Epoch 6, Test Accuracy: 0.2095
+Epoch 7, Test Accuracy: 0.2095
+Epoch 8, Test Accuracy: 0.2095
+Epoch 9, Test Accuracy: 0.2095
+Epoch 10, Test Accuracy: 0.2095
 
-Mean Accuracy: 0.205
+Mean Accuracy: 0.20949999999999996
 '''
