@@ -204,7 +204,7 @@ train_reviews, test_reviews, train_scores, test_scores = train_test_split(
 #########################################################################################
 
 # 텍스트 토큰화 및 패딩
-tokenizer = Tokenizer(num_words=1000)  # 상위 1000개 단어만 사용
+tokenizer = Tokenizer(num_words=50)  # 상위 1000개 단어만 사용
 tokenizer.fit_on_texts(reviews)  # 전체 리뷰 데이터에 대해 fit
 train_sequences = tokenizer.texts_to_sequences(train_reviews)
 test_sequences = tokenizer.texts_to_sequences(test_reviews)
@@ -236,7 +236,7 @@ def perform(params, train_data, train_labels, test_data, test_labels, epochs=10,
     accuracies = []
 
     for epoch in range(epochs):
-        learning_rate = 0.01
+        learning_rate = 0.1
 
         for i in range(0, len(train_data), batch_size):
             x_batch = train_data[i:i+batch_size]
