@@ -44,7 +44,7 @@ Tokenizer 클래스
     4) padding : pre/post를 지정하여 앞이나 뒤에 패딩을 삽입할지 결정, 기본값은 pre
     5) truncating : pre/post를 지정하여 시퀀스가 maxlen보다 길 때 앞이나 뒤를 잘라낼지 결정, 기본값은 pre
 '''
-tokenizer = Tokenizer(num_words=100)               # 가장 빈번한 2000(최대 단어 수 지정)개 단어만 사용
+tokenizer = Tokenizer(num_words=25)                 # 입력층의 뉴런 수와 동일화화
 tokenizer.fit_on_texts(reviews)                     # 각 리뷰 데이터들에서 단어를 토큰화하고, 각 단어에 고유한 인덱스를 할당
 sequences = tokenizer.texts_to_sequences(reviews)   # 텍스트를 이러한 인덱스의 시퀀스로 변환 => 신경망 모델의 입력
 maxlen = 25
@@ -210,5 +210,3 @@ output_size = 5
 network = initialize_network(input_size, hidden_size1, hidden_size2, output_size)
 mean_accuracy = perform(network, data, labels, k=5, epochs=10, batch_size=100)
 print("Mean Accuracy :", mean_accuracy)
-
-# Mean Accuracy : 0.2
