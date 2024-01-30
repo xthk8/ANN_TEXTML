@@ -204,7 +204,7 @@ train_reviews, test_reviews, train_scores, test_scores = train_test_split(
 #########################################################################################
 
 # 텍스트 토큰화 및 패딩
-tokenizer = Tokenizer(num_words=50)  # 상위 1000개 단어만 사용
+tokenizer = Tokenizer(num_words=25)  # 입력층 뉴런 수와 동일화 (단어 단위로 입력층에 들어감) 
 tokenizer.fit_on_texts(reviews)  # 전체 리뷰 데이터에 대해 fit
 train_sequences = tokenizer.texts_to_sequences(train_reviews)
 test_sequences = tokenizer.texts_to_sequences(test_reviews)
@@ -232,7 +232,7 @@ output_size = 5
 # mlp = SoftmaxWithLoss()
 
 # 실행 함수 정의
-def perform(params, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100):
+def perform(params, train_data, train_labels, test_data, test_labels, epochs=20, batch_size=100):
     accuracies = []
 
     for epoch in range(epochs):
@@ -274,16 +274,19 @@ print("Mean Accuracy:", mean_accuracy)
 
 
 ''' 
-Epoch 1, Test Accuracy: 0.2095
-Epoch 2, Test Accuracy: 0.2095
-Epoch 3, Test Accuracy: 0.2095
-Epoch 4, Test Accuracy: 0.2095
-Epoch 5, Test Accuracy: 0.2095
-Epoch 6, Test Accuracy: 0.2095
-Epoch 7, Test Accuracy: 0.2095
-Epoch 8, Test Accuracy: 0.2095
-Epoch 9, Test Accuracy: 0.2095
-Epoch 10, Test Accuracy: 0.2095
+Epoch 1, Test Accuracy: 0.2145
+Epoch 2, Test Accuracy: 0.2145
+Epoch 3, Test Accuracy: 0.2145
+Epoch 4, Test Accuracy: 0.2145
+Epoch 5, Test Accuracy: 0.2145
+Epoch 6, Test Accuracy: 0.2145
+Epoch 7, Test Accuracy: 0.2145
+Epoch 8, Test Accuracy: 0.2145
+Epoch 9, Test Accuracy: 0.2145
+Epoch 10, Test Accuracy: 0.2145
 
-Mean Accuracy: 0.20949999999999996
+Mean Accuracy: 0.2145
 '''
+
+# 낮은 정확도
+# 옵티마이저 한계 -> 학습 제한이 있을 수 있음 (해당 코드에서는 gradient 조정 이상으로 옵티마이저를 적용하지 않음)
