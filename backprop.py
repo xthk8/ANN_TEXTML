@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+import matplotlib.pyplot as plt
 
 ###################################
 
@@ -232,7 +233,7 @@ output_size = 5
 # mlp = SoftmaxWithLoss()
 
 # 실행 함수 정의
-def perform(params, train_data, train_labels, test_data, test_labels, epochs=20, batch_size=100):
+def perform(params, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100):
     accuracies = []
 
     for epoch in range(epochs):
@@ -262,16 +263,18 @@ def perform(params, train_data, train_labels, test_data, test_labels, epochs=20,
         print(f"Epoch {epoch + 1}, Test Accuracy: {test_accuracy}")
 
     mean_accuracy = np.mean(accuracies)
-    return mean_accuracy
+    return accuracies, mean_accuracy
 
 
 params = initialize_network(input_size, hidden_size1, hidden_size2, output_size)
 network = TwoLayerNet(input_size, hidden_size1, hidden_size2, output_size)
-mean_accuracy = perform(params, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100)
-print("Mean Accuracy:", mean_accuracy)
+acclst, mean_accuracy = perform(params, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100)
+seq = [i for i in range(1,11)]
 
-
-
+plt.plot(seq, acclst)
+plt.xlabel('epoch')
+plt.ylabel('accuracy')
+plt.show()
 
 ''' 
 Epoch 1, Test Accuracy: 0.2145
