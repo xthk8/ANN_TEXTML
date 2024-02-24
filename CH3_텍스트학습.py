@@ -35,14 +35,35 @@ train_reviews, test_reviews, train_scores, test_scores = train_test_split(
     reviews, scores, test_size=0.2, random_state=42
 )
 
+##########################################
+
+# 텍스트 토큰화 및 패딩
+tokenizer = Tokenizer(num_words=25) 
+tokenizer.fit_on_texts(reviews)  # 전체 리뷰 데이터에 대해 fit
+train_sequences = tokenizer.texts_to_sequences(train_reviews)
+test_sequences = tokenizer.texts_to_sequences(test_reviews)
+
+# 모든 시퀀스를 같은 길이로 맞춤
+maxlen = 25
+train_data = pad_sequences(train_sequences, maxlen=maxlen)
+test_data = pad_sequences(test_sequences, maxlen=maxlen)
+
+# 원-핫 인코딩 적용
+encoder = OneHotEncoder(categories='auto', handle_unknown='ignore')
+encoder.fit(np.array(train_scores).reshape(-1, 1))  # 훈련 점수에 대해서만 fit
+train_labels = encoder.transform(np.array(train_scores).reshape(-1, 1)).toarray()
+test_labels = encoder.transform(np.array(test_scores).reshape(-1, 1)).toarray()
+
+# 신경망 구조 설정 및 초기화
+input_size = maxlen 
+hidden_size1 = 50
+hidden_size2 = 5
+output_size = 5
 
 ###################################
 
 # 활성화 함수 정의
-'''
-def sigmoid(x):     # 은닉층
-    return 1 / (1 + np.exp(-x))
-'''
+
 def sigmoid(x):     # 오버플로 발생으로 인해 대체된 코드
     z = np.exp(-np.abs(x))
     return np.where(x > 0, 1 / (1 + z), z / (1 + z))
@@ -61,6 +82,7 @@ def softmax(x):     # 출력층
 ###################################
 
 # 신경망 초기화 함수   --> 각 테스트에 대해 맨 처음 정의 시
+
 def initialize_network(input_size, hidden_size1, hidden_size2, output_size):
     np.random.seed(42)
     return {
@@ -101,7 +123,7 @@ def cross_entropy_error(y, t):
 
 ####################################
 
-def loss(network, x, t):                                 # 모델의 예측 결과값을 받아 실제 정답과 오차 계산 (예측 & 평가 한 번에 실행)
+def loss(network, x, t):                        # 모델의 예측 결과값을 받아 실제 정답과 오차 계산 (예측 & 평가 한 번에 실행)
     y = forward(network, x)
     return cross_entropy_error(y,t)
 
@@ -140,6 +162,7 @@ def numerical_gradient(f, x):   # 손실함수의 기울기 도출 -> 이후 이
 
     return grad
 
+'''
 # 경사하강법 
 def gradient_descent(f, init_x, lr=0.01, step_num=30):
     x = init_x
@@ -149,32 +172,7 @@ def gradient_descent(f, init_x, lr=0.01, step_num=30):
         x -= lr * grad
 
     return x
-
-#################
-
-# 텍스트 토큰화 및 패딩
-tokenizer = Tokenizer(num_words=1000)  # 상위 1000개 단어만 사용
-tokenizer.fit_on_texts(reviews)  # 전체 리뷰 데이터에 대해 fit
-train_sequences = tokenizer.texts_to_sequences(train_reviews)
-test_sequences = tokenizer.texts_to_sequences(test_reviews)
-
-# 모든 시퀀스를 같은 길이로 맞춤
-maxlen = 25
-train_data = pad_sequences(train_sequences, maxlen=maxlen)
-test_data = pad_sequences(test_sequences, maxlen=maxlen)
-
-# 원-핫 인코딩 적용
-encoder = OneHotEncoder(categories='auto', handle_unknown='ignore')
-encoder.fit(np.array(train_scores).reshape(-1, 1))  # 훈련 점수에 대해서만 fit
-train_labels = encoder.transform(np.array(train_scores).reshape(-1, 1)).toarray()
-test_labels = encoder.transform(np.array(test_scores).reshape(-1, 1)).toarray()
-
-# 신경망 구조 설정 및 초기화
-input_size = maxlen 
-hidden_size1 = 50
-hidden_size2 = 5
-output_size = 5
-
+'''
 ###############################################
 
 
@@ -191,12 +189,12 @@ def calculate_accuracy(network, x, actual_scores):
 #################################################
 
 # 실행 함수 정의
-def perform(network, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100):
+def perform(network, train_data, train_labels, test_data, test_labels, epochs, batch_size=100):
 
     accuracies = []
+    learning_rate = 0.01
 
     for epoch in range(epochs):
-        learning_rate = 0.01
 
         # 각 에포크마다 전체 훈련 데이터를 사용
         for i in range(0, len(train_data), batch_size):
@@ -234,7 +232,7 @@ def perform(network, train_data, train_labels, test_data, test_labels, epochs=10
     
 # 모델 초기화 및 학습
 network = initialize_network(input_size, hidden_size1, hidden_size2, output_size)
-mean_accuracy = perform(network, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100)
+mean_accuracy = perform(network, train_data, train_labels, test_data, test_labels, epochs=20, batch_size=100)
 print("Mean Accuracy:", mean_accuracy)
 
 
