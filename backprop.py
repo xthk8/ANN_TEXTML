@@ -122,10 +122,25 @@ class TwoLayerNet:
             t = np.argmax(t, axis=1)
         accuracy = np.sum(y == t) / float(x.shape[0])
         return accuracy
+    
+    def numerical_gradient(self, x, t):
+        loss_W = lambda W : self.loss(x, t)
+
+        grad = {}
+        grad['W1'] = numerical_gradient(loss_W, self.params['W1'])
+        grad['b1'] = numerical_gradient(loss_W, self.params['b1'])
+        grad['W2'] = numerical_gradient(loss_W, self.params['W2'])
+        grad['b2'] = numerical_gradient(loss_W, self.params['b2'])
+        grad['W3'] = numerical_gradient(loss_W, self.params['W3'])
+        grad['b3'] = numerical_gradient(loss_W, self.params['b3'])
+        return grads
 
     def gradient(self, x, t):
+
+        # 순전파
         self.loss(x, t)
 
+        # 역전파
         dout = 1
         dout = self.lastLayer.backward(dout)
 
@@ -134,14 +149,13 @@ class TwoLayerNet:
         for layer in layers:
             dout = layer.backward(dout)
 
-        grads = {
-            'W1': self.layers['Affine1'].dW,
-            'b1': self.layers['Affine1'].db,
-            'W2': self.layers['Affine2'].dW,
-            'b2': self.layers['Affine2'].db,
-            'W3': self.layers['Affine3'].dW,
-            'b3': self.layers['Affine3'].db
-        }
+        grads = {}
+        grads['W1'] = self.layers['Affine1'].dW
+        grads['b1'] = self.layers['Affine1'].db
+        grads['W2'] = self.layers['Affine2'].dW
+        grads['b2'] = self.layers['Affine2'].db
+        grads['W3'] = self.layers['Affine3'].dW
+        grads['b3'] = self.layers['Affine3'].db        
 
         return grads
 
@@ -229,29 +243,33 @@ output_size = 5
 
 #################################################
 
-# network = TwoLayerNet(input_size, hidden_size1, hidden_size2, output_size)
-# mlp = SoftmaxWithLoss()
-
 # 실행 함수 정의
-def perform(params, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100):
+def perform(train_data, train_labels, test_data, test_labels, epochs, batch_size):
+
     accuracies = []
+    params = initialize_network(input_size, hidden_size1, hidden_size2, output_size)
+    network = TwoLayerNet(input_size, hidden_size1, hidden_size2, output_size)
+    learning_rate = 0.1
 
     for epoch in range(epochs):
-        learning_rate = 0.1
+
+        test_accuracy = 0
 
         for i in range(0, len(train_data), batch_size):
+
+            # 학습 (훈련)
             x_batch = train_data[i:i+batch_size]
             t_batch = train_labels[i:i+batch_size]
 
             t_batch = np.array(t_batch)
 
-            grads = network.gradient(x_batch, t_batch)
+            grad = network.gradient(x_batch, t_batch)
 
             for key in ('W1', 'b1', 'W2', 'b2', 'W3', 'b3'):
-                params[key] -= learning_rate * grads[key]
+                params[key] -= learning_rate * grad[key]
 
-        test_accuracy = 0
-        for i in range(0, len(test_data), batch_size):
+
+            # 테스트 (평가)
             x_test_batch = test_data[i:i+batch_size]
             t_test_batch = test_labels[i:i+batch_size]
 
@@ -266,9 +284,7 @@ def perform(params, train_data, train_labels, test_data, test_labels, epochs=10,
     return accuracies, mean_accuracy
 
 
-params = initialize_network(input_size, hidden_size1, hidden_size2, output_size)
-network = TwoLayerNet(input_size, hidden_size1, hidden_size2, output_size)
-acclst, mean_accuracy = perform(params, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100)
+acclst, mean_accuracy = perform(train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100)
 seq = [i for i in range(1,11)]
 
 plt.plot(seq, acclst)
