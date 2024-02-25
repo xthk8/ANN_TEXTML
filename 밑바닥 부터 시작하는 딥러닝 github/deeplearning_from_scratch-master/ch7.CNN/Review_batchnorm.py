@@ -42,7 +42,7 @@ class NN:
         self.layers['BatchNorm2'] = batch_norm(self.params['gamma2'], self.params['beta2'])  # 추가: 배치 정규화 레이어
         self.layers['Relu2'] = Relu()
         self.layers['Affine3'] = Affine(self.params['W3'], self.params['b3'])
-        self.layers['BatchNorm3'] = batch_norm(self.params['gamma3'], self.params['beta3'])  # 추가: 배치 정규화 레이어
+        # self.layers['BatchNorm3'] = batch_norm(self.params['gamma3'], self.params['beta3'])  # 추가: 배치 정규화 레이어
         self.lastLayer = SoftmaxWithLoss()
 
     def predict(self, x, train_flg=True):
