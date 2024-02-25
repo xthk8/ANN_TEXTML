@@ -313,7 +313,7 @@ def read_reviews_from_folders(base_path, max_files_per_score=2000):
     return data, labels
 
 # 파일 경로 정의 및 함수 호출
-review_base_path = "C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하는 딥러닝/reviews3"
+review_base_path = "C:/Users/USER/Desktop/학부연구/reviews3"
 reviews, scores = read_reviews_from_folders(review_base_path)
 
 
@@ -382,7 +382,7 @@ def perform(train_data, train_labels, test_data, test_labels, epochs, batch_size
             x_test_batch = test_data[i:i+batch_size]
             t_test_batch = test_labels[i:i+batch_size]
 
-            y_test_batch = network.predict(x_test_batch)
+            y_test_batch = network.predict(x_test_batch) 
             test_accuracy += np.sum(np.argmax(y_test_batch, axis=1) == np.argmax(t_test_batch, axis=1))
 
         test_accuracy /= len(test_data)
