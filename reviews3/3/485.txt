@@ -1,1 +1,0 @@
-These come out upside-down, but they still print the regular way? Weird.
