@@ -293,17 +293,6 @@ plt.ylabel('accuracy')
 plt.show()
 
 ''' 
-Epoch 1, Test Accuracy: 0.2145
-Epoch 2, Test Accuracy: 0.2145
-Epoch 3, Test Accuracy: 0.2145
-Epoch 4, Test Accuracy: 0.2145
-Epoch 5, Test Accuracy: 0.2145
-Epoch 6, Test Accuracy: 0.2145
-Epoch 7, Test Accuracy: 0.2145
-Epoch 8, Test Accuracy: 0.2145
-Epoch 9, Test Accuracy: 0.2145
-Epoch 10, Test Accuracy: 0.2145
-
 Mean Accuracy: 0.2145
 '''
 
