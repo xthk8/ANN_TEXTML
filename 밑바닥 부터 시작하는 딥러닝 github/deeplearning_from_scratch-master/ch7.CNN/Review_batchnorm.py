@@ -9,7 +9,7 @@ from sklearn.preprocessing import OneHotEncoder
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from common.multi_layer_net_extend import MultiLayerNetExtend
-from common.optimizer import SGD, Adam
+from common.optimizer import SGD, Momentum, AdaGrad, RMSprop, Adam
 
 ###################################
 
@@ -22,27 +22,27 @@ class NN:
         self.params = {
             'W1': weight_init_std * np.random.randn(input_size, hidden_size1),
             'b1': np.zeros(hidden_size1),
-            'gamma1': np.ones(hidden_size1),   # 추가: 배치 정규화 파라미터
-            'beta1': np.zeros(hidden_size1),   # 추가: 배치 정규화 파라미터
+            'gamma1': np.ones(hidden_size1),   
+            'beta1': np.zeros(hidden_size1),   
             'W2': weight_init_std * np.random.randn(hidden_size1, hidden_size2),
             'b2': np.zeros(hidden_size2),
-            'gamma2': np.ones(hidden_size2),   # 추가: 배치 정규화 파라미터
-            'beta2': np.zeros(hidden_size2),   # 추가: 배치 정규화 파라미터
+            'gamma2': np.ones(hidden_size2),   
+            'beta2': np.zeros(hidden_size2),   
             'W3': weight_init_std * np.random.randn(hidden_size2, output_size),
             'b3': np.zeros(output_size),
-            'gamma3': np.ones(output_size),    # 추가: 배치 정규화 파라미터
-            'beta3': np.zeros(output_size)     # 추가: 배치 정규화 파라미터
+            'gamma3': np.ones(output_size),    
+            'beta3': np.zeros(output_size)     
         }
 
         self.layers = OrderedDict()
         self.layers['Affine1'] = Affine(self.params['W1'], self.params['b1'])
-        self.layers['BatchNorm1'] = batch_norm(self.params['gamma1'], self.params['beta1'])  # 추가: 배치 정규화 레이어
+        self.layers['BatchNorm1'] = batch_norm(self.params['gamma1'], self.params['beta1'])  
         self.layers['Relu1'] = Relu()
         self.layers['Affine2'] = Affine(self.params['W2'], self.params['b2'])
-        self.layers['BatchNorm2'] = batch_norm(self.params['gamma2'], self.params['beta2'])  # 추가: 배치 정규화 레이어
+        self.layers['BatchNorm2'] = batch_norm(self.params['gamma2'], self.params['beta2'])  
         self.layers['Relu2'] = Relu()
         self.layers['Affine3'] = Affine(self.params['W3'], self.params['b3'])
-        # self.layers['BatchNorm3'] = batch_norm(self.params['gamma3'], self.params['beta3'])  # 추가: 배치 정규화 레이어
+        # self.layers['BatchNorm3'] = batch_norm(self.params['gamma3'], self.params['beta3'])  
         self.lastLayer = SoftmaxWithLoss()
 
     def predict(self, x, train_flg=True):
@@ -85,16 +85,16 @@ class NN:
         grads = {
             'W1': self.layers['Affine1'].dW,
             'b1': self.layers['Affine1'].db,
-            'gamma1': self.layers['BatchNorm1'].dgamma,  # 추가: 배치 정규화 파라미터의 기울기
-            'beta1': self.layers['BatchNorm1'].dbeta,    # 추가: 배치 정규화 파라미터의 기울기
+            'gamma1': self.layers['BatchNorm1'].dgamma,  
+            'beta1': self.layers['BatchNorm1'].dbeta,    
             'W2': self.layers['Affine2'].dW,
             'b2': self.layers['Affine2'].db,
-            'gamma2': self.layers['BatchNorm2'].dgamma,  # 추가: 배치 정규화 파라미터의 기울기
-            'beta2': self.layers['BatchNorm2'].dbeta,    # 추가: 배치 정규화 파라미터의 기울기
+            'gamma2': self.layers['BatchNorm2'].dgamma,  
+            'beta2': self.layers['BatchNorm2'].dbeta,    
             'W3': self.layers['Affine3'].dW,
             'b3': self.layers['Affine3'].db,
-            'gamma3': self.layers['BatchNorm3'].dgamma,  # 추가: 배치 정규화 파라미터의 기울기
-            'beta3': self.layers['BatchNorm3'].dbeta     # 추가: 배치 정규화 파라미터의 기울기
+            'gamma3': self.layers['BatchNorm3'].dgamma,  
+            'beta3': self.layers['BatchNorm3'].dbeta     
         }
 
         return grads
@@ -125,7 +125,7 @@ def read_reviews_from_folders(base_path, max_files_per_score=2000):
     return data, labels
 
 # 파일 경로 정의 및 함수 호출
-review_base_path = "C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하는 딥러닝/reviews3"
+review_base_path = "C:/Users/USER/Desktop/학부연구/reviews3"
 reviews, scores = read_reviews_from_folders(review_base_path)
 
 # 데이터셋 분할
