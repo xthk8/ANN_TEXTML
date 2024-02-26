@@ -42,7 +42,7 @@ class NN:
         self.layers['BatchNorm2'] = batch_norm(self.params['gamma2'], self.params['beta2'])  
         self.layers['Relu2'] = Relu()
         self.layers['Affine3'] = Affine(self.params['W3'], self.params['b3'])
-        # self.layers['BatchNorm3'] = batch_norm(self.params['gamma3'], self.params['beta3'])  
+        self.layers['BatchNorm3'] = batch_norm(self.params['gamma3'], self.params['beta3'])  
         self.lastLayer = SoftmaxWithLoss()
 
     def predict(self, x, train_flg=True):
@@ -101,8 +101,6 @@ class NN:
 
 
 
-###################################
-
 ############################################################################
 
 
@@ -144,7 +142,6 @@ test_sequences = tokenizer.texts_to_sequences(t_train)
 # 모든 시퀀스를 같은 길이로 맞춤
 maxlen = 25
 train_data = pad_sequences(train_sequences, maxlen=maxlen)
-print(train_data)
 test_data = pad_sequences(test_sequences, maxlen=maxlen)
 
 # 원-핫 인코딩 적용
@@ -187,8 +184,8 @@ def batch_norm(weight_init_std):
     ### 옵티마이저
     for i in range(epoch_cnt):
 
-        x_batch = x_train[i:i+100]
-        t_batch = t_train[i:i+100]
+        x_batch = train_data[i:i+100]
+        t_batch = test_data[i:i+100]
 
         for _network in (bn_network, network):
             grads = _network.gradient(x_batch, t_batch)
