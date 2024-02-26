@@ -21,7 +21,7 @@ def read_reviews(base_path):
     return data, labels
 
 # 파일 경로 정의 및 함수 호출
-review_path = "C:/Users/USER/Desktop/학부연구/밑바닥부터 시작하는 딥러닝/reviews3"
+review_path = "C:/Users/USER/Desktop/학부연구/reviews3"
 reviews, scores = read_reviews(review_path) # 리뷰 텍스트 & 점수 저장
 
 # 텍스트 토큰화 및 패딩
