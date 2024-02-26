@@ -11,8 +11,6 @@ from keras.preprocessing.sequence import pad_sequences
 from common.multi_layer_net_extend import MultiLayerNetExtend
 from common.optimizer import SGD, Momentum, AdaGrad, RMSprop, Adam
 
-###################################
-
 #####################################################################
     
 # 전체 신경망 구현 
