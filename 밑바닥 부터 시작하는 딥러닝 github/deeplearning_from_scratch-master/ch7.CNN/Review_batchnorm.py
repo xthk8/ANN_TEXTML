@@ -11,8 +11,63 @@ from keras.preprocessing.sequence import pad_sequences
 from common.multi_layer_net_extend import MultiLayerNetExtend
 from common.optimizer import SGD, Momentum, AdaGrad, RMSprop, Adam
 
+############################################################################
+
+
+# 맨 처음 - 데이터 읽어오기
+def read_reviews_from_folders(base_path, max_files_per_score=2000):
+    data = []
+    labels = []
+    for score in range(1, 6):
+        folder_path = os.path.join(base_path, str(score))
+        file_count = 0
+        # 각각의 점수에 해당하는 텍스트 파일 읽기 (최대 2000개)
+        for file_path in glob.glob(os.path.join(folder_path, '*.txt')):
+            if file_count >= max_files_per_score:
+                break
+            with open(file_path, 'r', encoding='utf8') as file:
+                review_text = file.read().strip()
+                data.append(review_text)
+                labels.append(score)
+            file_count += 1
+    return data, labels
+
+# 파일 경로 정의 및 함수 호출
+review_base_path = "C:/Users/USER/Desktop/학부연구/reviews3"
+reviews, scores = read_reviews_from_folders(review_base_path)
+
+# 데이터셋 분할
+x_train, t_train, x_test, t_test = train_test_split(
+    reviews, scores, test_size=0.2, random_state=42
+)
+
+#########################################################################################
+
+# 텍스트 토큰화 및 패딩
+tokenizer = Tokenizer(num_words=25)  # 입력층 뉴런 수와 동일화 (단어 단위로 입력층에 들어감) 
+tokenizer.fit_on_texts(reviews)  # 전체 리뷰 데이터에 대해 fit
+train_sequences = tokenizer.texts_to_sequences(x_train)
+test_sequences = tokenizer.texts_to_sequences(t_train)
+
+# 모든 시퀀스를 같은 길이로 맞춤
+maxlen = 25
+train_data = pad_sequences(train_sequences, maxlen=maxlen)
+test_data = pad_sequences(test_sequences, maxlen=maxlen)
+
+# 원-핫 인코딩 적용
+encoder = OneHotEncoder(categories='auto', handle_unknown='ignore')
+encoder.fit(np.array(x_test).reshape(-1, 1))  # 훈련 점수에 대해서만 fit
+train_labels = encoder.transform(np.array(x_test).reshape(-1, 1)).toarray()
+test_labels = encoder.transform(np.array(t_test).reshape(-1, 1)).toarray()
+
+# 신경망 구조 설정 및 초기화
+input_size = maxlen 
+hidden_size1 = 50
+hidden_size2 = 5
+output_size = 5
+
 #####################################################################
-    
+'''
 # 전체 신경망 구현 
     
 class NN:
@@ -96,69 +151,15 @@ class NN:
         }
 
         return grads
-
-
-
-############################################################################
-
-
-# 맨 처음 - 데이터 읽어오기
-def read_reviews_from_folders(base_path, max_files_per_score=2000):
-    data = []
-    labels = []
-    for score in range(1, 6):
-        folder_path = os.path.join(base_path, str(score))
-        file_count = 0
-        # 각각의 점수에 해당하는 텍스트 파일 읽기 (최대 2000개)
-        for file_path in glob.glob(os.path.join(folder_path, '*.txt')):
-            if file_count >= max_files_per_score:
-                break
-            with open(file_path, 'r', encoding='utf8') as file:
-                review_text = file.read().strip()
-                data.append(review_text)
-                labels.append(score)
-            file_count += 1
-    return data, labels
-
-# 파일 경로 정의 및 함수 호출
-review_base_path = "C:/Users/USER/Desktop/학부연구/reviews3"
-reviews, scores = read_reviews_from_folders(review_base_path)
-
-# 데이터셋 분할
-x_train, t_train, x_test, t_test = train_test_split(
-    reviews, scores, test_size=0.2, random_state=42
-)
-
-#########################################################################################
-
-# 텍스트 토큰화 및 패딩
-tokenizer = Tokenizer(num_words=25)  # 입력층 뉴런 수와 동일화 (단어 단위로 입력층에 들어감) 
-tokenizer.fit_on_texts(reviews)  # 전체 리뷰 데이터에 대해 fit
-train_sequences = tokenizer.texts_to_sequences(x_train)
-test_sequences = tokenizer.texts_to_sequences(t_train)
-
-# 모든 시퀀스를 같은 길이로 맞춤
-maxlen = 25
-train_data = pad_sequences(train_sequences, maxlen=maxlen)
-test_data = pad_sequences(test_sequences, maxlen=maxlen)
-
-# 원-핫 인코딩 적용
-encoder = OneHotEncoder(categories='auto', handle_unknown='ignore')
-encoder.fit(np.array(x_test).reshape(-1, 1))  # 훈련 점수에 대해서만 fit
-train_labels = encoder.transform(np.array(x_test).reshape(-1, 1)).toarray()
-test_labels = encoder.transform(np.array(t_test).reshape(-1, 1)).toarray()
-
-# 신경망 구조 설정 및 초기화
-input_size = maxlen 
-hidden_size1 = 50
-hidden_size2 = 5
-output_size = 5
+'''
 
 #################################################
 
+# 학습 데이터를 줄임
+train_data = train_data[:1000]
+test_data = test_data[:1000]
+
 # 배치정규화
-
-
 def batch_norm(weight_init_std):
 
     bn_network = MultiLayerNetExtend(input_size=25,
@@ -170,6 +171,9 @@ def batch_norm(weight_init_std):
                                   hidden_size_list=[50, 5],
                                   output_size=5,
                                   weight_init_std=weight_init_std)
+    
+    
+    # 옵티마이저
     optimizer = SGD(lr=0.1)
 
     train_acc_list = []
@@ -179,16 +183,19 @@ def batch_norm(weight_init_std):
     iter_per_epoch = max(train_size / 100, 1)
     epoch_cnt = 20
 
-    ### 옵티마이저
     for i in range(epoch_cnt):
 
-        x_batch = train_data[i:i+100]
-        t_batch = test_data[i:i+100]
+        # 미니배치 생성
+        batch_mask = np.random.choice(train_size, 100)
+        x_batch = train_data[batch_mask]
+        t_batch = test_data[batch_mask]
 
+        # 배치 정규화를 사용하는 경우와 사용하지 않는 경우에 대해 그래디언트 계산 및 가중치 업데이트
         for _network in (bn_network, network):
             grads = _network.gradient(x_batch, t_batch)
             optimizer.update(_network.params, grads)
 
+        # 1에폭마다 정확도 계산 및 기록
         if i % iter_per_epoch == 0:
             train_acc = network.accuracy(x_train, t_train)
             bn_train_acc = bn_network.accuracy(x_train, t_train)
@@ -238,7 +245,7 @@ plt.show()
 
 '''
 # 실행 함수 정의
-def perform(params, train_data, train_labels, test_data, test_labels, epochs=20, batch_size=100):
+def perform(params, train_data, train_labels, test_data, test_labels, epochs=20, 100=100):
     accuracies = []
 
     for epoch in range(epochs):
@@ -273,7 +280,7 @@ def perform(params, train_data, train_labels, test_data, test_labels, epochs=20,
 
 params = initialize_network(input_size, hidden_size1, hidden_size2, output_size)
 network = NN(input_size, hidden_size1, hidden_size2, output_size)
-mean_accuracy = perform(params, train_data, train_labels, test_data, test_labels, epochs=10, batch_size=100)
+mean_accuracy = perform(params, train_data, train_labels, test_data, test_labels, epochs=10, 100=100)
 print("Mean Accuracy:", mean_accuracy)
 '''
 
